@@ -2,6 +2,7 @@ import pymysql
 import sys
 from PyQt6.QtCore import QSize,Qt
 from PyQt6.QtWidgets import QApplication, QWidget,QMainWindow,QPushButton,QLabel,QLineEdit,QGridLayout,QVBoxLayout,QMessageBox,QDateEdit,QComboBox,QListWidget
+from PyQt6.QtGui import QPalette,QColor
 from datetime import date
 "Окно Авторизации"
 class App(QMainWindow):
@@ -20,7 +21,7 @@ class App(QMainWindow):
             user='kiselevW',
             password='kiselevW',
             database='project_managment_kiselev',
-            port=3306
+            port=8889
         )
             cursor = self.connection.cursor()
             cursor.execute("Select * From logs where login=0")
@@ -35,6 +36,11 @@ class App(QMainWindow):
     def init_ui(self):
         central_widget = QWidget()
         self.setCentralWidget(central_widget)
+        
+        palet = central_widget.palette()
+        palet.setColor(QPalette.ColorRole.Window,QColor(237, 230, 214))
+        central_widget.setPalette(palet)
+        central_widget.setAutoFillBackground(True)
 
         login_layout = QVBoxLayout()
         """login_layout.addStretch(1)"""
@@ -45,16 +51,21 @@ class App(QMainWindow):
         layout.setContentsMargins(20, 20, 20, 20)
         layout.setSpacing(0)
 
-        self.login_btn = QPushButton("Entry")
+        self.login_btn = QPushButton("Вход")
         self.login_btn.clicked.connect(self.check_login)
         
 
-        login_lbn = QLabel("Login")
+        login_lbn = QLabel("Логин")
         self.login_line = QLineEdit()
+        login_palet = self.login_line.palette()
+        login_palet.setColor(QPalette.ColorRole.Window,QColor(237, 230, 214))
+        self.login_line.setPalette(login_palet)
+        self.login_line.setAutoFillBackground(True)
+        
         login_layout.addWidget(login_lbn,alignment=Qt.AlignmentFlag.AlignCenter)
         login_layout.addWidget(self.login_line)
 
-        password_lbn = QLabel("Password")
+        password_lbn = QLabel("Пароль")
         self.password_line = QLineEdit()
         self.password_line.setEchoMode(QLineEdit.EchoMode.Password)
         password_layout.addWidget(password_lbn,alignment=Qt.AlignmentFlag.AlignCenter)
@@ -75,7 +86,7 @@ class App(QMainWindow):
                 user='kiselevW',
                 password='kiselevW',
                 database='project_managment_kiselev',
-                port=3306            
+                port=8889         
         )
         self.crs = connection.cursor()
         self.crs.execute("Select * From logs Where login = %s And password = %s",(loging_entry_value,password_entry_value))
@@ -90,7 +101,7 @@ class App(QMainWindow):
 class ControlModule(QMainWindow):
     def __init__(self):
         super().__init__()
-        self.setWindowTitle("Task control")
+        self.setWindowTitle("Управление задачами")
         self.resize(1000,1000)
         self.control_init_ui()
         self.db_con()
@@ -102,20 +113,23 @@ class ControlModule(QMainWindow):
             user='kiselevW',
             password='kiselevW',
             database='project_managment_kiselev',
-            port=3306
+            port=8889
         )        
     def control_init_ui(self):
         qwi= QWidget()
         layer = QVBoxLayout()
-
+        palet = qwi.palette()
+        palet.setColor(QPalette.ColorRole.Window,QColor(293,188,175))
+        qwi.setPalette(palet)
+        qwi.setAutoFillBackground(True)
         
         task_box = QGridLayout()
         self.name_task_line = QLineEdit()
-        name_lbn = QLabel("Task name")
+        name_lbn = QLabel("Наименование задачи")
         self.deadline_line = QDateEdit()
         self.deadline_line.setDate(date.today())
-        deadline_lbn = QLabel("Deadline")
-        task_confrim_btn = QPushButton("Confrim")
+        deadline_lbn = QLabel("Сроки")
+        task_confrim_btn = QPushButton("Подтвердить")
         task_confrim_btn.clicked.connect(self.task_confrim)
 
         task_box.addWidget(self.name_task_line,0,1)
@@ -129,11 +143,11 @@ class ControlModule(QMainWindow):
         self.second_name_line = QLineEdit()
         self.specialization_line = QLineEdit()
 
-        first_name_lbn = QLabel("First name")
-        second_name_lbn = QLabel("Second name")
-        specilaziation_lbn = QLabel("Spec ")
+        first_name_lbn = QLabel("Имя сотрудника")
+        second_name_lbn = QLabel("Фамилия")
+        specilaziation_lbn = QLabel("Специализация ")
 
-        confrim_employee_btn = QPushButton("Confrim")
+        confrim_employee_btn = QPushButton("Подтвердить")
         confrim_employee_btn.clicked.connect(self.employee_confrim)
 
         employee_box.addWidget(self.first_name_line,0,1)
@@ -147,9 +161,9 @@ class ControlModule(QMainWindow):
         assigment_box = QGridLayout()
         self.assigment_employee_cmbx = QComboBox()
         self.assigmnet_task_cmbx = QComboBox()
-        assigment_employee_lbn = QLabel("Assign employee")
-        assigment_task_lbn = QLabel("Assign task")
-        assigment_confrim_btn = QPushButton("Confrim")
+        assigment_employee_lbn = QLabel("Задать сотрудника")
+        assigment_task_lbn = QLabel("Задать задачу")
+        assigment_confrim_btn = QPushButton("Подтвердить")
         assigment_confrim_btn.clicked.connect(self.assigment_confrim)
 
         assigment_box.addWidget(self.assigment_employee_cmbx,0,1,1,2)
@@ -158,7 +172,7 @@ class ControlModule(QMainWindow):
         assigment_box.addWidget(assigment_employee_lbn,0,0)
         assigment_box.addWidget(assigment_confrim_btn,2,0)
 
-        show_all_btn = QPushButton("Check all")
+        show_all_btn = QPushButton("Проверить заданные задачи и их ответственных")
         show_all_btn.clicked.connect(self.show_all_confrim)
 
         layer.addWidget(show_all_btn,stretch=1)
@@ -173,7 +187,7 @@ class ControlModule(QMainWindow):
             deadline = self.deadline_line.date().toString("yyyy-MM-dd")
             
             if not task_name:
-                QMessageBox.warning(self, "Warning", "Task name is required!")
+                QMessageBox.warning(self, "Внимание", "Не все поля заполнены!")
                 return
                 
             cursor = self.db.cursor()
@@ -181,14 +195,15 @@ class ControlModule(QMainWindow):
             cursor.execute(sql, (task_name, deadline))
             self.db.commit()
             
-            QMessageBox.information(self, "Success", "Task added successfully!")
+            QMessageBox.information(self, "Успех", "Задача добавлена успешно!")
             
         except pymysql.IntegrityError:
-            QMessageBox.warning(self, "Error", "Task ID already exists!")
+            QMessageBox.warning(self, "Ошибка", "Ошибка!")
         except Exception as e:
-            QMessageBox.warning(self, "Error", f"An error occurred: {str(e)}")
+            QMessageBox.warning(self, "Ошибка", f"Ошибка: {str(e)}")
             self.db.rollback()
         finally:
+            self.load_combobox_data()
             cursor.close()
     def employee_confrim(self):
         try:
@@ -197,7 +212,7 @@ class ControlModule(QMainWindow):
             specialization = self.specialization_line.text()
             
             if not all([first_name, second_name, specialization]):
-                QMessageBox.warning(self, "Warning", "All fields are required!")
+                QMessageBox.warning(self, "Внимание", "Не все поля заполнены!")
                 return
                 
             cursor = self.db.cursor()
@@ -205,14 +220,15 @@ class ControlModule(QMainWindow):
             cursor.execute(sql, (first_name, second_name, specialization))
             self.db.commit()
             
-            QMessageBox.information(self, "Success", "Employee added successfully!")
+            QMessageBox.information(self, "Успех", "Успешно добавили!")
         
         except pymysql.IntegrityError:
-            QMessageBox.warning(self, "Error", "Employee ID already exists!")
+            QMessageBox.warning(self, "Ошибка", "Такой человек уже существует!")
         except Exception as e:
-            QMessageBox.warning(self, "Error", f"An error occurred: {str(e)}")
+            QMessageBox.warning(self, "Ошибка", f"Ошибка: {str(e)}")
             self.db.rollback()
         finally:
+            self.load_combobox_data()
             cursor.close()
     def assigment_confrim(self):
         try:
@@ -225,25 +241,27 @@ class ControlModule(QMainWindow):
             cursor.execute(sql, (employee_id, task_id))
             self.db.commit()
             
-            QMessageBox.information(self, "Success", "Task assigned successfully!")
+            QMessageBox.information(self, "Успех", "Успешно добавлена задача")
     
         except pymysql.IntegrityError as e:
             if "Duplicate entry" in str(e):
-                QMessageBox.warning(self, "Error", "This assignment already exists or ID is duplicated!")
+                QMessageBox.warning(self, "Ошибка", "Дубликат")
             else:
-                QMessageBox.warning(self, "Error", f"An error occurred: {str(e)}")
+                QMessageBox.warning(self, "Ошибка", f"Ошибка: {str(e)}")
             self.db.rollback()
         except Exception as e:
-            QMessageBox.warning(self, "Error", f"An error occurred: {str(e)}")
+            QMessageBox.warning(self, "Ошибка", f"Ошибка: {str(e)}")
             self.db.rollback()
         finally:
+            self.load_combobox_data()
             cursor.close()
     def show_all_confrim(self):
             self.shfrm = ShowForm()
             self.shfrm.show()
 
     def load_combobox_data(self):
-        
+        self.assigment_employee_cmbx.clear()
+        self.assigmnet_task_cmbx.clear()
         cursor = self.db.cursor()
         cursor.execute("SELECT id_employee,first_name, second_name FROM accountable_employee")
         employees = cursor.fetchall()
@@ -267,18 +285,21 @@ class ShowForm(QMainWindow):
             user='kiselevW',
             password='kiselevW',
             database='project_managment_kiselev',
-            port=3306
+            port=8889
         )
+        self.setWindowTitle("Окно просмотра")
         qw = QWidget()
         layout = QVBoxLayout()
         self.qlist = QListWidget(self)
 
-        task_btn = QPushButton("check task")
-        task_btn.clicked.connect(self.check_task)
-        employee_btn = QPushButton("check employee")
+        check_all_btn = QPushButton("Проверить выданные задачи")
+        check_all_btn.clicked.connect(self.check_all)
+        employee_btn = QPushButton("Список работников")
         employee_btn.clicked.connect(self.check_employee)
-
-        layout.addWidget(task_btn)
+        tasks_btn = QPushButton("Проверить задачи")
+        tasks_btn.clicked.connect(self.check_task)
+        layout.addWidget(tasks_btn)
+        layout.addWidget(check_all_btn)
         layout.addWidget(self.qlist)
         layout.addWidget(employee_btn)
         qw.setLayout(layout)
@@ -286,23 +307,36 @@ class ShowForm(QMainWindow):
         self.setCentralWidget(qw)
 
     def check_employee(self):
+        self.qlist.clear()
         crs = self.db.cursor()
         sql = "Select * From accountable_employee"
         crs.execute(sql)
         self.qlist.clear()
         for row in crs.fetchall():
-            itm_txt = f"Employee id {row[0]} | First name {row[1]} | Second name {row[2]} | Spec {row[3]}"
+            itm_txt = f"----------------------\nИдентификатор сотрудника {row[0]} | Имя {row[1]} | Фамилия {row[2]} | Специализация {row[3]}\n----------------------\n\n"
             self.qlist.addItem(itm_txt)
         crs.close()
     def check_task(self):
+        self.qlist.clear()
         crs = self.db.cursor()
         sql = "Select * From task"
         crs.execute(sql)
         self.qlist.clear()
         for row in crs.fetchall():
-            itm_txt = f"Task id {row[0]} | Task name {row[1]} | task deadline {row[2]}"
+            itm_txt = f"----------------------\nИдентификатор задачи {row[0]} | Наименование задачи {row[1]} | Сроки {row[2]}\n----------------------\n\n"
             self.qlist.addItem(itm_txt)
         crs.close()
+    def check_all(self):
+        self.qlist.clear()
+        crs = self.db.cursor()
+        sql = "Select accountable_employee.id_employee,accountable_employee.first_name,accountable_employee.second_name,accountable_employee.specialization,task.task_name,task.task_deadline,task.id_task_main FROM accountable_employee INNER JOIN assignment ON accountable_employee.id_employee = assignment.id_employee INNER JOIN task on assignment.id_task = task.id_task_main;"
+        crs.execute(sql)
+        self.qlist.clear()
+        for row in crs.fetchall():
+            itm_txt = f"----------------------\nНаименование задачи {row[4]}\nИмя ответственного сотрудника {row[1]} | Фамилия {row[2]} | Специализация {row[3]} \nСроки {row[5]} | Идентификатор задачи {row[6]} | Идентификатор сотрудника {row[0]}\n----------------------\n\n"
+            self.qlist.addItem(itm_txt)
+        crs.close()
+        
 
 
         
