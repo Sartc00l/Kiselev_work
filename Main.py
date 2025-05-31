@@ -4,6 +4,7 @@ from PyQt6.QtCore import QSize,Qt
 from PyQt6.QtWidgets import QApplication, QWidget,QMainWindow,QPushButton,QLabel,QLineEdit,QGridLayout,QVBoxLayout,QMessageBox,QDateEdit,QComboBox,QListWidget
 from PyQt6.QtGui import QPalette,QColor
 from datetime import date
+import bcrypt
 "Окно Авторизации"
 class App(QMainWindow):
     def __init__(self):
@@ -13,7 +14,7 @@ class App(QMainWindow):
         self.setMaximumSize(QSize(690,900))
         self.init_ui()
         self.check_connection()
-    
+
     def check_connection(self):
         try:
             self.connection =  pymysql.connect(
@@ -71,9 +72,9 @@ class App(QMainWindow):
         layout.addLayout(password_layout,0,3,1,2,alignment=Qt.AlignmentFlag.AlignRight|Qt.AlignmentFlag.AlignCenter)
         
         central_widget.setLayout(layout)
-    
+
     def check_login(self):
-        loging_entry_value = self.login_line.text()
+        (login_entry_value) = self.login_line.text()
         password_entry_value = self.password_line.text()
         connection = pymysql.connect(
                 host='localhost',
@@ -83,10 +84,11 @@ class App(QMainWindow):
                 port=3306         
         )
         self.crs = connection.cursor()
-        self.crs.execute("Select * From logs Where login = %s And password = %s",(loging_entry_value,password_entry_value))
+        self.crs.execute("Select password From logs Where login =%s",(login_entry_value,))
         result = self.crs.fetchone()
         connection.close()
-        if result:
+        hashpw = str(result[0]).encode("utf-8")
+        if bcrypt.checkpw(password_entry_value.encode("utf-8"),hashpw):
             self.control_module = ControlModule()
             self.control_module.show()
             self.hide()
@@ -104,7 +106,7 @@ class ControlModule(QMainWindow):
         self.control_init_ui()
         self.db_con()
         self.load_combobox_data()
-    
+
     def db_con(self):
         self.db = pymysql.connect(
             host='localhost',
@@ -240,7 +242,7 @@ class ControlModule(QMainWindow):
             self.db.commit()
             
             QMessageBox.information(self, "Успех", "Успешно добавлена задача")
-    
+
         except pymysql.IntegrityError as e:
             if "Duplicate entry" in str(e):
                 QMessageBox.warning(self, "Ошибка", "Дубликат")
@@ -342,6 +344,7 @@ class NewUserForm(QMainWindow):
         self.setMinimumSize(QSize(480,700))
         self.setMaximumSize(QSize(690,900))
         self.init_reg_ui()
+
     def init_reg_ui(self):
         central_reg_widget = QWidget()
         self.setCentralWidget(central_reg_widget)
@@ -379,11 +382,11 @@ class NewUserForm(QMainWindow):
         self.loging_reg_entry_value = self.login_reg_line.text()
         self.password_reg_entry_value = self.password_reg_line.text()
         debug_str = f"\nlog {self.loging_reg_entry_value} type {type(self.loging_reg_entry_value)}\npas {self.password_reg_entry_value} type{type(self.password_reg_entry_value)}"
+    
         if not self.loging_reg_entry_value or not self.password_reg_entry_value:
             QMessageBox.critical(self,"Поля для ввода пустые!","Поля не должны быть пустыми")
             return
 
-        
         self.connection = pymysql.connect(
                 host='localhost',
                 user='kiselevW',
@@ -398,16 +401,26 @@ class NewUserForm(QMainWindow):
         if result:
             QMessageBox.warning(self,"Пользовател с таким логином уже есть!","Пользовател с таким логином уже есть!\nВыберите другой логин")
             self.connection.close()
-
         else:
-            QMessageBox.warning(self,"Успех","Такого логина нету в бд всё круто!")
-            self.register_user()
-    def register_user(self):
-       self.crs.execute("Insert Into logs(`password`,`login`) Values(%s,%s)",(self.loging_reg_entry_value,self.password_reg_entry_value))
-       self.connection.commit()
-       self.connection.close() 
-       
-   
+            self.register_user(self.loging_reg_entry_value, self.password_reg_entry_value)
+    def register_user(self,password:str,username:str):
+        #hash pw 
+        salt = bcrypt.gensalt()
+        hashpw = bcrypt.hashpw(password.encode("utf-8"),salt ) 
+        
+        
+        self.crs.execute("Insert Into logs(`password`,`login`) Values(%s,%s)",(hashpw.decode("utf-8"),username))
+        self.connection.commit()
+        self.connection.close()
+
+        QMessageBox.information(self,"Succes","Сделали нового пользователя")
+        self.login_form = App()
+        self.login_form.show()
+        self.hide()
+        
+
+        
+
 
         
 
