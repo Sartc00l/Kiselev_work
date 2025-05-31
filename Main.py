@@ -21,7 +21,7 @@ class App(QMainWindow):
             user='kiselevW',
             password='kiselevW',
             database='project_managment_kiselev',
-            port=8889
+            port=3306
         )
             cursor = self.connection.cursor()
             cursor.execute("Select * From logs where login=0")
@@ -36,16 +36,11 @@ class App(QMainWindow):
     def init_ui(self):
         central_widget = QWidget()
         self.setCentralWidget(central_widget)
-        
-        palet = central_widget.palette()
-        palet.setColor(QPalette.ColorRole.Window,QColor(237, 230, 214))
-        central_widget.setPalette(palet)
-        central_widget.setAutoFillBackground(True)
 
         login_layout = QVBoxLayout()
-        """login_layout.addStretch(1)"""
+
         password_layout = QVBoxLayout()
-        """ password_layout.addStretch(1)"""
+
 
         layout= QGridLayout()
         layout.setContentsMargins(20, 20, 20, 20)
@@ -57,10 +52,7 @@ class App(QMainWindow):
 
         login_lbn = QLabel("Логин")
         self.login_line = QLineEdit()
-        login_palet = self.login_line.palette()
-        login_palet.setColor(QPalette.ColorRole.Window,QColor(237, 230, 214))
-        self.login_line.setPalette(login_palet)
-        self.login_line.setAutoFillBackground(True)
+
         
         login_layout.addWidget(login_lbn,alignment=Qt.AlignmentFlag.AlignCenter)
         login_layout.addWidget(self.login_line)
@@ -71,8 +63,10 @@ class App(QMainWindow):
         password_layout.addWidget(password_lbn,alignment=Qt.AlignmentFlag.AlignCenter)
         password_layout.addWidget(self.password_line)
 
-
-        layout.addWidget(self.login_btn,3,2,1,2,alignment=Qt.AlignmentFlag.AlignCenter)
+        registration_btn = QPushButton("Зарегистрировать нового пользователя")
+        registration_btn.clicked.connect(self.registrate_user)
+        layout.addWidget(registration_btn,3,3,1,2,alignment=Qt.AlignmentFlag.AlignCenter)
+        layout.addWidget(self.login_btn,3,1,1,2,alignment=Qt.AlignmentFlag.AlignCenter)
         layout.addLayout(login_layout,0,1,1,2,alignment=Qt.AlignmentFlag.AlignLeft|Qt.AlignmentFlag.AlignCenter)
         layout.addLayout(password_layout,0,3,1,2,alignment=Qt.AlignmentFlag.AlignRight|Qt.AlignmentFlag.AlignCenter)
         
@@ -86,7 +80,7 @@ class App(QMainWindow):
                 user='kiselevW',
                 password='kiselevW',
                 database='project_managment_kiselev',
-                port=8889         
+                port=3306         
         )
         self.crs = connection.cursor()
         self.crs.execute("Select * From logs Where login = %s And password = %s",(loging_entry_value,password_entry_value))
@@ -98,6 +92,10 @@ class App(QMainWindow):
             self.hide()
         else:
             QMessageBox.warning(self,"NE TOT PASSWORD","I need normally password")
+    def registrate_user(self):
+        self.registrate_form = NewUserForm()
+        self.registrate_form.show()
+        self.hide()
 class ControlModule(QMainWindow):
     def __init__(self):
         super().__init__()
@@ -113,7 +111,7 @@ class ControlModule(QMainWindow):
             user='kiselevW',
             password='kiselevW',
             database='project_managment_kiselev',
-            port=8889
+            port=3306
         )        
     def control_init_ui(self):
         qwi= QWidget()
@@ -285,7 +283,7 @@ class ShowForm(QMainWindow):
             user='kiselevW',
             password='kiselevW',
             database='project_managment_kiselev',
-            port=8889
+            port=3306
         )
         self.setWindowTitle("Окно просмотра")
         qw = QWidget()
@@ -337,7 +335,79 @@ class ShowForm(QMainWindow):
             self.qlist.addItem(itm_txt)
         crs.close()
         
+class NewUserForm(QMainWindow):
+    def __init__(self):
+        super().__init__()
+        self.setWindowTitle("Registration")
+        self.setMinimumSize(QSize(480,700))
+        self.setMaximumSize(QSize(690,900))
+        self.init_reg_ui()
+    def init_reg_ui(self):
+        central_reg_widget = QWidget()
+        self.setCentralWidget(central_reg_widget)
 
+        login_reg_layout = QVBoxLayout()
+
+        password_reg_layout = QVBoxLayout()
+        layout= QGridLayout()
+        layout.setContentsMargins(20, 20, 20, 20)
+        layout.setSpacing(0)
+
+        self.login_reg_btn = QPushButton("Зарегистрировать")
+        self.login_reg_btn.clicked.connect(self.check_matches)
+        
+
+        login_reg_lbn = QLabel("Логин")
+        self.login_reg_line = QLineEdit()
+
+        
+        login_reg_layout.addWidget(login_reg_lbn,alignment=Qt.AlignmentFlag.AlignCenter)
+        login_reg_layout.addWidget(self.login_reg_line)
+
+        password_reg_lbn = QLabel("Пароль")
+        self.password_reg_line = QLineEdit()
+        self.password_reg_line.setEchoMode(QLineEdit.EchoMode.Password)
+        password_reg_layout.addWidget(password_reg_lbn,alignment=Qt.AlignmentFlag.AlignCenter)
+        password_reg_layout.addWidget(self.password_reg_line)
+
+        layout.addWidget(self.login_reg_btn,3,1,1,2,alignment=Qt.AlignmentFlag.AlignCenter)
+        layout.addLayout(login_reg_layout,0,1,1,2,alignment=Qt.AlignmentFlag.AlignLeft|Qt.AlignmentFlag.AlignCenter)
+        layout.addLayout(password_reg_layout,0,3,1,2,alignment=Qt.AlignmentFlag.AlignRight|Qt.AlignmentFlag.AlignCenter)
+        
+        central_reg_widget.setLayout(layout)
+    def check_matches(self):
+        self.loging_reg_entry_value = self.login_reg_line.text()
+        self.password_reg_entry_value = self.password_reg_line.text()
+        debug_str = f"\nlog {self.loging_reg_entry_value} type {type(self.loging_reg_entry_value)}\npas {self.password_reg_entry_value} type{type(self.password_reg_entry_value)}"
+        if not self.loging_reg_entry_value or not self.password_reg_entry_value:
+            QMessageBox.critical(self,"Поля для ввода пустые!","Поля не должны быть пустыми")
+            return
+
+        
+        self.connection = pymysql.connect(
+                host='localhost',
+                user='kiselevW',
+                password='kiselevW',
+                database='project_managment_kiselev',
+                port=3306         
+        )
+        self.crs = self.connection.cursor()
+        self.crs.execute("Select * From logs Where login = %s",(self.loging_reg_entry_value))
+        result = self.crs.fetchone()
+        
+        if result:
+            QMessageBox.warning(self,"Пользовател с таким логином уже есть!","Пользовател с таким логином уже есть!\nВыберите другой логин")
+            self.connection.close()
+
+        else:
+            QMessageBox.warning(self,"Успех","Такого логина нету в бд всё круто!")
+            self.register_user()
+    def register_user(self):
+       self.crs.execute("Insert Into logs(`password`,`login`) Values(%s,%s)",(self.loging_reg_entry_value,self.password_reg_entry_value))
+       self.connection.commit()
+       self.connection.close() 
+       
+   
 
         
 
